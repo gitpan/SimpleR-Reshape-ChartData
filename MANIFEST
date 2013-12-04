@@ -1,0 +1,17 @@
+LICENSE
+MANIFEST
+META.yml
+Makefile.PL
+README
+README.pod
+dist.ini
+lib/SimpleR/Reshape/ChartData.pm
+xt/01.dim2.csv
+xt/01.dim2.png
+xt/01.dim2.t
+xt/02.dim3.csv
+xt/02.dim3.png
+xt/02.dim3.t
+xt/03.dim3_horizon.csv
+xt/03.dim3_horizon.png
+xt/03.dim3_horizon.t
