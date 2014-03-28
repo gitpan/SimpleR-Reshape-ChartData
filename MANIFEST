@@ -15,3 +15,6 @@ xt/02.dim3.t
 xt/03.dim3_horizon.csv
 xt/03.dim3_horizon.png
 xt/03.dim3_horizon.t
+xt/04.dim3_scatter.csv
+xt/04.dim3_scatter.png
+xt/04.dim3_scatter.t
