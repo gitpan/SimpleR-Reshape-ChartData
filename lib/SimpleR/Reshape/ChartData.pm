@@ -10,10 +10,10 @@ read_chart_data_dim3_horizon
 read_chart_data_dim3_scatter
 );
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
-use SimpleR::Reshape;
-use SimpleR::Stat;
+use SimpleR::Reshape qw/read_table melt/;
+use SimpleR::Stat qw/uniq_arrayref conv_arrayref_to_hash/;
 
 sub read_chart_data_dim3_scatter {
     my ( $d, %opt ) = @_;
@@ -21,9 +21,9 @@ sub read_chart_data_dim3_scatter {
     my $r = read_table( $d, %opt );
     my $h = conv_arrayref_to_hash( $r, [ $opt{legend}, $opt{label} ], $opt{data} );
 
-    my @legend_fields = exists $opt{legend_sort} ? @{ $opt{legend_sort} } : sort keys(%$h);
+    my @legend_fields = $opt{legend_sort} ? @{ $opt{legend_sort} } : sort keys(%$h);
     my $label_uniq = uniq_arrayref([ map { keys(%{$h->{$_}}) } @legend_fields ]);
-    my @label_fields = exists $opt{label_sort} ? @{ $opt{label_sort} } : sort @$label_uniq;
+    my @label_fields = $opt{label_sort} ? @{ $opt{label_sort} } : sort @$label_uniq;
 
     my @chart_data = map { 
     my $r = $h->{$_};
@@ -47,13 +47,21 @@ sub read_chart_data_dim3_horizon {
     my ( $d, %opt ) = @_;
     my $r = read_table( $d, %opt );
     $xr = melt( $r, id => $opt{label}, measure => $opt{legend}, names=> $opt{names}, return_arrayref=> 1,  );
-    return read_chart_data_dim3( $xr, label => [0], legend => [1], data=> [2] );
+
+    return read_chart_data_dim3( $xr, 
+        label => [0], 
+        legend => [1], 
+        data=> [2] ,
+        legend_sort => $opt{legend_sort}, 
+        label_sort => $opt{label_sort}, 
+    );
 }
 
 sub read_chart_data_dim2 {
     my ($d, %opt) = @_;
 
     $opt{legend} = $opt{label};
+    $opt{legend_sort} = $opt{label_sort};
     my ($res, %res_opt) = read_chart_data_dim3($d, %opt); 
     my @data = map { $res->[$_][$_] } (0 .. $#$res);
 
@@ -66,9 +74,10 @@ sub read_chart_data_dim3 {
     my $r = read_table( $d, %opt );
     my $h = conv_arrayref_to_hash( $r, [ $opt{legend}, $opt{label} ], $opt{data} );
 
-    my @legend_fields = exists $opt{legend_sort} ? @{ $opt{legend_sort} } : sort keys(%$h);
+
+    my @legend_fields = $opt{legend_sort} ? @{ $opt{legend_sort} } : sort keys(%$h);
     my $label_uniq = uniq_arrayref([ map { keys(%{$h->{$_}}) } @legend_fields ]);
-    my @label_fields = exists $opt{label_sort} ? @{ $opt{label_sort} } : @$label_uniq;
+    my @label_fields = $opt{label_sort} ? @{ $opt{label_sort} } : @$label_uniq;
 
     my @chart_data = map { [ @{ $h->{$_} }{@label_fields} ] } @legend_fields;
     for my $c (@chart_data) {
@@ -83,3 +92,5 @@ sub read_chart_data_dim3 {
 }
 
 1;
+
+
