@@ -10,6 +10,36 @@ L<SimpleR::Reshape::ChartData>
 
 =head1 FUNCTION
 
+=head2  read_chart_data_dim3
+
+    my ($r, %opt) = read_chart_data_dim3('02.dim3.csv', 
+        skip_head=> 1, 
+        label => [0], 
+        legend => [1], 
+        data => [2], 
+        sep=> ',', 
+        charset => 'utf8', 
+
+        #legend_remember_order => 1,  #1 : 默认值，用原有的顺序，0 : 直接sort
+        #label_remember_order => 1, 
+
+        #legend_sort => [ qw/ ... / ], # 指定固定顺序
+        #label_sort => [ qw/ ... / ], 
+
+        #chart_data_sub => sub { my ($h, $legend, $label) = @_; ... } 
+    );
+    #$r = [[3, 2], [0, 1], [3, 0]],
+    #%opt = ("legend",
+    #["\xE4\xBC\x98", "\xE5\xB7\xAE", "\xE8\x89\xAF"],
+    #"label",
+    #["\xE7\x94\xB5\xE4\xBF\xA1", "\xE8\x81\x94\xE9\x80\x9A"], )
+  
+=begin html
+
+<img src="xt/02.dim3.png"></img>
+
+=end html
+
 =begin html
 
 实例参考 <a href="xt/">xt子文件夹</a>
@@ -37,28 +67,6 @@ L<SimpleR::Reshape::ChartData>
 =begin html
 
 <img src="xt/01.dim2.png"></img>
-
-=end html
-
-=head2  read_chart_data_dim3
-
-    my ($r, %opt) = read_chart_data_dim3('02.dim3.csv', 
-        skip_head=> 1, 
-        label => [0], 
-        legend => [1], 
-        data => [2], 
-        sep=> ',', 
-        charset => 'utf8', 
-    );
-    #$r = [[3, 2], [0, 1], [3, 0]],
-    #%opt = ("legend",
-    #["\xE4\xBC\x98", "\xE5\xB7\xAE", "\xE8\x89\xAF"],
-    #"label",
-    #["\xE7\x94\xB5\xE4\xBF\xA1", "\xE8\x81\x94\xE9\x80\x9A"], )
-  
-=begin html
-
-<img src="xt/02.dim3.png"></img>
 
 =end html
 

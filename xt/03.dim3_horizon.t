@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use SimpleR::Reshape::ChartData;
-use lib 'd:/temp/code/chart_director';
+use lib 'd:/copy/save/windows/chart_director';
 use SimpleCall::ChartDirector;
 use Data::Dump qw/dump/;
 

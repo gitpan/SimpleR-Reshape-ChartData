@@ -10,37 +10,35 @@ read_chart_data_dim3_horizon
 read_chart_data_dim3_scatter
 );
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 use SimpleR::Reshape qw/read_table melt/;
 use SimpleR::Stat qw/uniq_arrayref conv_arrayref_to_hash/;
 
-sub read_chart_data_dim3_scatter {
-    my ( $d, %opt ) = @_;
+sub make_chart_data {
+    my ($h, $legend, $label) = @_;
 
-    my $r = read_table( $d, %opt );
-    my $h = conv_arrayref_to_hash( $r, [ $opt{legend}, $opt{label} ], $opt{data} );
+    my @chart_data = map { [ @{ $h->{$_} }{@$label} ] } @$legend;
+    return \@chart_data;
+}
 
-    my @legend_fields = $opt{legend_sort} ? @{ $opt{legend_sort} } : sort keys(%$h);
-    my $label_uniq = uniq_arrayref([ map { keys(%{$h->{$_}}) } @legend_fields ]);
-    my @label_fields = $opt{label_sort} ? @{ $opt{label_sort} } : sort @$label_uniq;
+sub make_chart_data_scatter {
+    my ($h, $legend, $label) = @_;
 
     my @chart_data = map { 
     my $r = $h->{$_};
     my @k=keys %$r;
     my @d = map { $r->{$_} } @k;
-     [ \@k, \@d ] 
+    [ \@k, \@d ] 
     } 
-    @legend_fields;
-    for my $c (@chart_data) {
-        $_ ||= 0 for @$c;
-    }
+    @$legend;
+    return \@chart_data;
+}
 
-    return (
-        \@chart_data,
-        label  => \@label_fields,
-        legend => \@legend_fields,
-    );
+sub read_chart_data_dim3_scatter {
+    my ( $d, %opt ) = @_;
+    $opt{chart_data_sub} ||= \&make_chart_data_scatter;
+    read_chart_data_dim3($d, %opt);
 }
 
 sub read_chart_data_dim3_horizon {
@@ -48,12 +46,14 @@ sub read_chart_data_dim3_horizon {
     my $r = read_table( $d, %opt );
     $xr = melt( $r, id => $opt{label}, measure => $opt{legend}, names=> $opt{names}, return_arrayref=> 1,  );
 
+    delete($opt{names});
     return read_chart_data_dim3( $xr, 
+        %opt, 
         label => [0], 
         legend => [1], 
         data=> [2] ,
-        legend_sort => $opt{legend_sort}, 
-        label_sort => $opt{label_sort}, 
+        #legend_sort => $opt{legend_sort}, 
+        #label_sort => $opt{label_sort}, 
     );
 }
 
@@ -62,6 +62,7 @@ sub read_chart_data_dim2 {
 
     $opt{legend} = $opt{label};
     $opt{legend_sort} = $opt{label_sort};
+    $opt{legend_remember_order} = $opt{label_remember_order};
     my ($res, %res_opt) = read_chart_data_dim3($d, %opt); 
     my @data = map { $res->[$_][$_] } (0 .. $#$res);
 
@@ -70,27 +71,40 @@ sub read_chart_data_dim2 {
 
 sub read_chart_data_dim3 {
     my ( $d, %opt ) = @_;
+    $opt{legend_remember_order} //= 1;
+    $opt{label_remember_order} //= 1;
+    $opt{chart_data_sub} ||= \&make_chart_data;
 
     my $r = read_table( $d, %opt );
-    my $h = conv_arrayref_to_hash( $r, [ $opt{legend}, $opt{label} ], $opt{data} );
+    my $h = conv_arrayref_to_hash( $r, 
+        [ $opt{legend}, $opt{label} ], $opt{data}, 
+        remember_key_order => 1, 
+    );
 
+    my @legend_fields = $opt{legend_sort} ? @{ $opt{legend_sort} } : 
+            $opt{legend_remember_order} ?  keys(%$h) : sort keys(%$h);
 
-    my @legend_fields = $opt{legend_sort} ? @{ $opt{legend_sort} } : sort keys(%$h);
-    my $label_uniq = uniq_arrayref([ map { keys(%{$h->{$_}}) } @legend_fields ]);
-    my @label_fields = $opt{label_sort} ? @{ $opt{label_sort} } : @$label_uniq;
+    my $label_uniq = uniq_arrayref([ map { keys(%{$h->{$_}}) } @legend_fields ],
+        #remember_key_order => 1, 
+        remember_key_order => $opt{label_remember_order}, 
+    );
+    my @label_fields = $opt{label_sort} ? @{ $opt{label_sort} } : 
+        #$opt{label_remember_order} ?  @$label_uniq : sort @$label_uniq;
+        @$label_uniq;
 
-    my @chart_data = map { [ @{ $h->{$_} }{@label_fields} ] } @legend_fields;
-    for my $c (@chart_data) {
+    #my @chart_data = map { [ @{ $h->{$_} }{@label_fields} ] } @legend_fields;
+    my $chart_data = $opt{chart_data_sub}->($h, \@legend_fields, \@label_fields);
+
+    for my $c (@$chart_data) {
         $_ ||= 0 for @$c;
     }
 
     return (
-        \@chart_data,
+        #\@chart_data,
+        $chart_data, 
         label  => \@label_fields,
         legend => \@legend_fields,
     );
 }
 
 1;
-
-

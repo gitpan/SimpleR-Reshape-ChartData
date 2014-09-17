@@ -17,4 +17,4 @@ requires:
   SimpleR::Stat: '0'
 resources:
   repository: https://github.com/abbypan/SimpleR-Reshape-ChartData.git
-version: '0.03'
+version: '0.04'

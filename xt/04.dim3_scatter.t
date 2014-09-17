@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-use lib 'd:/temp/code/chart_director';
+use lib 'd:/copy/save/windows/chart_director/';
 use lib '../lib';
 use SimpleR::Reshape::ChartData;
 use SimpleCall::ChartDirector;
